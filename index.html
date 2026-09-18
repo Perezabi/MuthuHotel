@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#f7f8fa" />
+    <title>MKS | Hotel Operations</title>
+    <link rel="icon" href="./images/logo/logo.jpeg">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class', theme: {
+                extend: {
+                    colors: { ink: '#17212b', slate: { 25: '#fbfcfd' }, coral: '#ed684f', mint: '#dff5e8', sea: '#237c78' },
+                    fontFamily: { display: ['"Space Grotesk"', 'sans-serif'], body: ['"DM Sans"', 'sans-serif'] },
+                    boxShadow: { soft: '0 10px 30px rgba(23,33,43,.07)' }
+                }
+            }
+        };
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap"
+        rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+    <style>
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: #f6f7f9;
+            color: #17212b;
+        }
+
+        .dark body {
+            background: #10171d;
+            color: #eef2f3;
+        }
+
+        .dark .panel,
+        .dark .sidebar {
+            background: #172129;
+            border-color: #263740;
+        }
+
+        .dark .muted,
+        .dark input,
+        .dark select,
+        .dark textarea {
+            color: #a9b9bf;
+        }
+
+        .dark input,
+        .dark select,
+        .dark textarea {
+            background: #1c2a32;
+            border-color: #334752;
+        }
+
+        .dark .soft-bg {
+            background: #203039;
+        }
+
+        .panel {
+            background: #fff;
+            border: 1px solid #e7ebee;
+            border-radius: 14px;
+            box-shadow: 0 8px 26px rgba(23, 33, 43, .045);
+        }
+
+        .sidebar {
+            background: #fff;
+            border-right: 1px solid #e7ebee;
+        }
+
+        .nav-active {
+            background: #e7f6ef;
+            color: #24755f;
+            font-weight: 700;
+        }
+
+        .dark .nav-active {
+            background: #24453d;
+            color: #9ce2bd;
+        }
+
+        .btn-primary {
+            background: #e86b52;
+            color: white;
+            box-shadow: 0 5px 12px rgba(232, 107, 82, .2);
+        }
+
+        .btn-primary:hover {
+            background: #d85b43;
+        }
+
+        .btn-soft {
+            background: #eef8f2;
+            color: #24755f;
+        }
+
+        .dark .btn-soft {
+            background: #25443c;
+            color: #9ce2bd;
+        }
+
+        input,
+        select,
+        textarea {
+            outline: none;
+            border: 1px solid #dce3e7;
+            border-radius: 9px;
+            padding: 9px 11px;
+            font-size: 13px;
+            width: 100%;
+            background: white;
+            color: #17212b;
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            border-color: #6dbb9b;
+            box-shadow: 0 0 0 3px rgba(109, 187, 155, .13);
+        }
+
+        .tab-active {
+            color: #d85b43;
+            border-bottom: 2px solid #e86b52;
+            font-weight: 700;
+        }
+
+        .menu-item {
+            transition: transform .15s, border-color .15s;
+        }
+
+        .menu-item:active {
+            transform: scale(.97);
+        }
+
+        .menu-photo {
+            width: 100%;
+            height: 112px;
+            object-fit: cover;
+            object-position: center;
+            border-radius: 9px;
+            margin-bottom: 12px;
+        }
+
+        .hide {
+            display: none !important;
+        }
+
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+
+            #receipt,
+            #receipt * {
+                visibility: visible;
+            }
+
+            #receipt {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 80mm;
+                box-shadow: none;
+            }
+        }
+    </style>
+</head>
+
+<body class="h-full">
+    <div id="app" class="min-h-full flex">
+        <aside class="sidebar w-64 shrink-0 hidden lg:flex flex-col p-5 fixed inset-y-0 z-20">
+            <div class="flex items-center gap-3 mb-9">
+                <img src="images/logo/logo.jpeg" alt="MKS logo" class="w-10 h-10 rounded-xl object-cover">
+                <div>
+                    <div class="font-display font-bold text-lg tracking-tight">MKS</div>
+                    <div class="text-[10px] uppercase tracking-[.18em] text-slate-400">hotel & restaurant</div>
+                </div>
+            </div>
+            <div class="text-[10px] text-slate-400 uppercase tracking-[.18em] mb-3">Workspace</div>
+            <nav id="nav" class="space-y-1">
+                <button data-view="dashboard"
+                    class="nav-btn nav-active w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm"><i
+                        data-lucide="layout-dashboard" class="w-4 h-4"></i>Overview</button>
+                <button data-view="billing"
+                    class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-slate-500"><i
+                        data-lucide="receipt" class="w-4 h-4"></i>POS & Billing</button>
+                <button data-view="inventory"
+                    class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-slate-500"><i
+                        data-lucide="boxes" class="w-4 h-4"></i>Godown Stock</button>
+                <button data-view="bookings"
+                    class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-slate-500"><i
+                        data-lucide="calendar-days" class="w-4 h-4"></i>Advance Bookings</button>
+                <button data-view="expenses"
+                    class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-slate-500"><i
+                        data-lucide="wallet-cards" class="w-4 h-4"></i>Expenses</button>
+            </nav>
+            <div class="mt-auto space-y-1"><button id="exportBtn"
+                    class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-slate-500 hover:bg-slate-50"><i
+                        data-lucide="download" class="w-4 h-4"></i>Export Excel</button><label
+                    class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-slate-500 hover:bg-slate-50 cursor-pointer"><i
+                        data-lucide="upload" class="w-4 h-4"></i>Import Backup<input id="importInput" type="file"
+                        accept=".xlsx" class="hidden"></label><button id="settingsBtn"
+                    class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-slate-500 hover:bg-slate-50"><i
+                        data-lucide="settings-2" class="w-4 h-4"></i>Settings</button></div>
+        </aside>
+        <main class="lg:ml-64 flex-1 min-w-0">
+            <header
+                class="h-16 border-b border-slate-200/80 dark:border-slate-700 px-5 md:px-8 flex items-center justify-between bg-white/75 dark:bg-[#172129]/80 backdrop-blur sticky top-0 z-10">
+                <div class="flex items-center gap-3"><button id="mobileMenu"
+                        class="lg:hidden p-2 rounded-lg hover:bg-slate-100"><i data-lucide="menu"
+                            class="w-5 h-5"></i></button>
+                    <div id="pageTitle" class="font-display text-xl font-bold">Overview</div>
+                </div>
+                <div class="flex items-center gap-2"><span id="saveState"
+                        class="text-xs text-slate-400 hidden sm:inline-flex items-center gap-1"><i data-lucide="cloud"
+                            class="w-3.5 h-3.5"></i> Google Sheets</span><button id="themeBtn" title="Toggle dark mode"
+                        class="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700"><i data-lucide="moon"
+                            class="w-4 h-4"></i></button>
+                    <div
+                        class="w-8 h-8 rounded-full bg-[#dff5e8] text-[#24755f] grid place-items-center font-bold text-xs">
+                        MKS</div>
+                </div>
+            </header>
+            <div id="mobileNav" class="hide lg:hidden p-3 border-b bg-white dark:bg-[#172129] flex gap-2 overflow-auto">
+            </div>
+            <div class="p-5 md:p-8 max-w-[1500px] mx-auto" id="content"></div>
+        </main>
+    </div>
+    <div id="modalRoot"></div>
+    <script>
+        const seedMenu = [{ id: 'm1', name: 'Fresh Lime Soda', category: 'Juices', price: 80, emoji: '🍋' }, { id: 'm2', name: 'Mango Lassi', category: 'Juices', price: 120, emoji: '🥭' }, { id: 'm3', name: 'Masala Dosa', category: 'Tiffin', price: 140, emoji: '🥞' }, { id: 'm4', name: 'Idli Sambar', category: 'Tiffin', price: 90, emoji: '🍚' }, { id: 'm5', name: 'Chicken Biryani', category: 'Dinner', price: 280, emoji: '🍛' }, { id: 'm6', name: 'Paneer Butter Masala', category: 'Dinner', price: 220, emoji: '🥘' }, { id: 'm7', name: 'Filter Coffee', category: 'Beverages', price: 45, emoji: '☕' }, { id: 'm8', name: 'Chai', category: 'Beverages', price: 35, emoji: '🫖' }, { id: 'm9', name: 'Gobi 65', category: 'Snacks', price: 160, emoji: '🥦' }, { id: 'm10', name: 'French Fries', category: 'Snacks', price: 110, emoji: '🍟' }];
+        const photoMenu = [{ id: 'photo-juice-lemon', name: 'Lemon Juice', category: 'Juices', price: 20, image: 'images/menu/menucard 4.jpeg' }, { id: 'photo-juice-apple', name: 'Apple Juice', category: 'Juices', price: 60, image: 'images/menu/menucard 4.jpeg' }, { id: 'photo-juice-pineapple', name: 'Pineapple Juice', category: 'Juices', price: 40, image: 'images/menu/menucard 4.jpeg' }, { id: 'photo-juice-orange', name: 'Orange Juice', category: 'Juices', price: 60, image: 'images/menu/menucard 4.jpeg' }, { id: 'photo-shake-apple', name: 'Apple Shake', category: 'Beverages', price: 70, image: 'images/menu/menucard 3.jpeg' }, { id: 'photo-shake-apple-ice', name: 'Apple Shake with Ice Cream', category: 'Beverages', price: 100, image: 'images/menu/menucard 3.jpeg' }, { id: 'photo-shake-pomegranate', name: 'Pomegranate Shake', category: 'Beverages', price: 80, image: 'images/menu/menucard 3.jpeg' }, { id: 'photo-shake-sapota', name: 'Sapota Shake', category: 'Beverages', price: 60, image: 'images/menu/menucard 3.jpeg' }, { id: 'photo-shake-mango', name: 'Mango Shake', category: 'Beverages', price: 70, image: 'images/menu/menucard 3.jpeg' }, { id: 'photo-shake-pineapple', name: 'Pineapple Shake', category: 'Beverages', price: 60, image: 'images/menu/menucard 3.jpeg' }, { id: 'photo-shake-badam', name: 'Badam Shake with Ice Cream', category: 'Beverages', price: 100, image: 'images/menu/menucard 3.jpeg' }, { id: 'photo-shake-vanilla', name: 'Vanilla Shake with Ice Cream', category: 'Beverages', price: 100, image: 'images/menu/menucard 3.jpeg' }, { id: 'photo-shake-strawberry', name: 'Strawberry Shake with Ice Cream', category: 'Beverages', price: 100, image: 'images/menu/menucard 3.jpeg' }, { id: 'photo-milk-rose', name: 'Rose Milk', category: 'Beverages', price: 40, image: 'images/menu/menucard 2.jpeg' }, { id: 'photo-milk-chocolate', name: 'Chocolate Milk', category: 'Beverages', price: 40, image: 'images/menu/menucard 2.jpeg' }, { id: 'photo-milk-strawberry', name: 'Strawberry Milk', category: 'Beverages', price: 40, image: 'images/menu/menucard 2.jpeg' }, { id: 'photo-milk-badam', name: 'Badam Milk', category: 'Beverages', price: 40, image: 'images/menu/menucard 2.jpeg' }, { id: 'photo-falooda-medium', name: 'Medium Falooda', category: 'Beverages', price: 110, image: 'images/menu/menucard 2.jpeg' }, { id: 'photo-falooda-royal', name: 'Royal Falooda', category: 'Beverages', price: 200, image: 'images/menu/menucard 2.jpeg' }, { id: 'photo-lassi', name: 'Lassi', category: 'Beverages', price: 50, image: 'images/menu/menucard 2.jpeg' }, { id: 'photo-lassi-strawberry', name: 'Strawberry Lassi', category: 'Beverages', price: 70, image: 'images/menu/menucard 2.jpeg' }, { id: 'photo-lassi-badam', name: 'Badam Lassi', category: 'Beverages', price: 80, image: 'images/menu/menucard 2.jpeg' }, { id: 'photo-lassi-pista', name: 'Pista Lassi', category: 'Beverages', price: 80, image: 'images/menu/menucard 2.jpeg' }, { id: 'photo-lassi-mango', name: 'Mango Lassi', category: 'Beverages', price: 70, image: 'images/menu/menucard 2.jpeg' }, { id: 'photo-lassi-chocolate', name: 'Chocolate Lassi', category: 'Beverages', price: 70, image: 'images/menu/menucard 2.jpeg' }, { id: 'photo-mojito-lemon', name: 'Lemon Mint Mojito', category: 'Beverages', price: 60, image: 'images/menu/menucard 1.jpeg' }, { id: 'photo-mojito-blue', name: 'Blue Curacao Mojito', category: 'Beverages', price: 60, image: 'images/menu/menucard 1.jpeg' }, { id: 'photo-mojito-watermelon', name: 'Watermelon Mojito', category: 'Beverages', price: 60, image: 'images/menu/menucard 1.jpeg' }, { id: 'photo-mojito-strawberry', name: 'Strawberry Mojito', category: 'Beverages', price: 60, image: 'images/menu/menucard 1.jpeg' }, { id: 'photo-mojito-greenapple', name: 'Green Apple Mojito', category: 'Beverages', price: 60, image: 'images/menu/menucard 1.jpeg' }, { id: 'photo-ice-vanilla', name: 'Vanilla Ice Cream', category: 'Snacks', price: 30, image: 'images/menu/menucard 1.jpeg' }, { id: 'photo-ice-strawberry', name: 'Strawberry Ice Cream', category: 'Snacks', price: 30, image: 'images/menu/menucard 1.jpeg' }, { id: 'photo-ice-chocolate', name: 'Chocolate Ice Cream', category: 'Snacks', price: 50, image: 'images/menu/menucard 1.jpeg' }, { id: 'photo-ice-pista', name: 'Pista Ice Cream', category: 'Snacks', price: 60, image: 'images/menu/menucard 1.jpeg' }, { id: 'photo-ice-butterscotch', name: 'Butterscotch Ice Cream', category: 'Snacks', price: 50, image: 'images/menu/menucard 1.jpeg' }, { id: 'photo-ice-mango', name: 'Mango Ice Cream', category: 'Snacks', price: 50, image: 'images/menu/menucard 1.jpeg' }, { id: 'photo-hot-badam', name: 'Badam Hot Milk', category: 'Beverages', price: 20, image: 'images/menu/menucard 1.jpeg' }, { id: 'photo-hot-horlicks', name: 'Horlicks Hot Milk', category: 'Beverages', price: 20, image: 'images/menu/menucard 1.jpeg' }, { id: 'photo-hot-boost', name: 'Boost Hot Milk', category: 'Beverages', price: 20, image: 'images/menu/menucard 1.jpeg' }];
+        const seedInventory = [{ id: 'i1', name: 'Basmati Rice', category: 'Grains', unit: 'kg', godown: 42, kitchen: 8, threshold: 15, cost: 110 }, { id: 'i2', name: 'Cooking Oil', category: 'Grocery', unit: 'ltr', godown: 28, kitchen: 6, threshold: 10, cost: 145 }, { id: 'i3', name: 'Chicken', category: 'Meat', unit: 'kg', godown: 18, kitchen: 4, threshold: 5, cost: 260 }, { id: 'i4', name: 'Fresh Milk', category: 'Dairy', unit: 'ltr', godown: 25, kitchen: 3, threshold: 8, cost: 62 }, { id: 'i5', name: 'LPG Cylinder', category: 'Fuel', unit: 'pcs', godown: 4, kitchen: 1, threshold: 2, cost: 1900 }];
+        const SHEET_WEBHOOK = 'https://script.google.com/macros/s/AKfycbwVTctw2435079qGCYe29GVJHEbT10uQZ_0WVhZ7jVNFbjFZJ2XeuG5gItl30bHlT93pg/exec';
+        const OLD_SHEET_WEBHOOK = 'https://script.google.com/macros/s/AKfycbzgPBtDQUCRL0L6kXO3dvHBTXiDKk6rU9z1AGRU-b8xagwoZ-iDDb-zfukwIUV9UTwJig/exec';
+        const db = { menu: [...seedMenu, ...photoMenu], inventory: seedInventory, bills: [], bookings: [], expenses: [], settings: { webhook: SHEET_WEBHOOK } }; const savedSettings = localStorage.getItem('ledgerly-settings'); if (savedSettings) db.settings = { ...db.settings, ...JSON.parse(savedSettings), webhook: JSON.parse(savedSettings).webhook === OLD_SHEET_WEBHOOK ? SHEET_WEBHOOK : JSON.parse(savedSettings).webhook }; localStorage.setItem('ledgerly-settings', JSON.stringify(db.settings)); let cart = [], currentView = 'dashboard', activeCategory = 'Juices';
+        const money = n => `₹${Number(n || 0).toLocaleString('en-IN', { maximumFractionDigits: 2 })}`; const today = () => new Date().toISOString().slice(0, 10); const uid = p => p + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+        function openDB() { return new Promise((resolve, reject) => { const req = indexedDB.open('ledgerly-hotel', 1); req.onupgradeneeded = () => { const d = req.result;['menu', 'inventory', 'bills', 'bookings', 'expenses', 'settings'].forEach(s => { if (!d.objectStoreNames.contains(s)) d.createObjectStore(s, { keyPath: 'id' }) }) }; req.onsuccess = () => resolve(req.result); req.onerror = () => reject(req.error) }) }
+        async function load() { render(); try { const response = await fetch(`${SHEET_WEBHOOK}?action=GET_ALL_DATA`); const remote = await response.json();['menu', 'inventory', 'bills', 'bookings', 'expenses'].forEach(store => { if (Array.isArray(remote[store]) && remote[store].length) db[store] = remote[store] }); } catch (e) { console.warn('Google Sheet unavailable; using starter data', e) } const known = new Set(db.menu.map(x => x.id)); const additions = photoMenu.filter(x => !known.has(x.id)); if (additions.length) { db.menu.push(...additions); pushToSheet() } render() }
+        function persist(store, data) { db[store] = data; render(); pushToSheet() }
+        function nav() { document.querySelectorAll('.nav-btn').forEach(b => b.onclick = () => { currentView = b.dataset.view; document.querySelectorAll('.nav-btn').forEach(x => x.classList.remove('nav-active')); b.classList.add('nav-active'); document.getElementById('pageTitle').textContent = b.textContent.trim(); render() }) }
+        function render() { const c = document.getElementById('content'); c.innerHTML = currentView === 'dashboard' ? dashboard() : currentView === 'billing' ? billing() : currentView === 'inventory' ? inventory() : currentView === 'bookings' ? bookings() : expenses(); lucide.createIcons(); bind(); }
+        function dashboard() { const revenue = db.bills.filter(x => x.date === today()).reduce((a, x) => a + x.total, 0), ex = db.expenses.filter(x => x.date === today()).reduce((a, x) => a + x.amount, 0), low = db.inventory.filter(x => x.godown + x.kitchen <= x.threshold).length; return `<div class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-7"><div><p class="text-sm text-[#e86b52] font-bold mb-1">Good morning, Muthu</p><h1 class="font-display text-3xl md:text-4xl font-bold tracking-tight">Your hotel, at a glance.</h1><p class="muted text-slate-500 mt-2 text-sm">${new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long' })} · Everything is saved locally.</p></div><button onclick="switchView('billing')" class="btn-primary rounded-lg px-4 py-2.5 text-sm font-bold flex items-center gap-2 self-start"><i data-lucide="plus" class="w-4 h-4"></i>New bill</button></div><div class="grid grid-cols-2 xl:grid-cols-4 gap-3 mb-6"><div class="panel p-4"><div class="text-xs text-slate-500 mb-3">Today's sales</div><div class="font-display text-2xl font-bold">${money(revenue)}</div><div class="text-xs text-[#24755f] mt-2">${db.bills.filter(x => x.date === today()).length} bills raised</div></div><div class="panel p-4"><div class="text-xs text-slate-500 mb-3">Today's expenses</div><div class="font-display text-2xl font-bold">${money(ex)}</div><div class="text-xs text-slate-500 mt-2">Operating outflow</div></div><div class="panel p-4"><div class="text-xs text-slate-500 mb-3">Net collection</div><div class="font-display text-2xl font-bold">${money(revenue - ex)}</div><div class="text-xs text-[#24755f] mt-2">Before adjustments</div></div><div class="panel p-4 ${low ? 'border-[#f2bf72]' : ''}"><div class="text-xs text-slate-500 mb-3">Stock attention</div><div class="font-display text-2xl font-bold">${low}</div><div class="text-xs ${low ? 'text-[#bd6a1d]' : 'text-[#24755f]'} mt-2">${low ? 'Items below threshold' : 'All levels healthy'}</div></div></div><div class="grid xl:grid-cols-[1.4fr_1fr] gap-5"><section class="panel p-5"><div class="flex justify-between items-center mb-5"><div><h2 class="font-display font-bold text-lg">Today at the counter</h2><p class="text-xs text-slate-500 mt-1">Latest bills and payment modes</p></div><button onclick="switchView('billing')" class="text-xs font-bold text-[#e86b52]">Open POS →</button></div>${recentBills()}</section><section class="panel p-5"><div class="flex justify-between items-center mb-5"><div><h2 class="font-display font-bold text-lg">Stock pulse</h2><p class="text-xs text-slate-500 mt-1">Godown + kitchen snapshot</p></div><button onclick="switchView('inventory')" class="text-xs font-bold text-[#e86b52]">Manage →</button></div>${stockRows(4)}</section></div>` }
+        function recentBills() { let rows = db.bills.slice(-5).reverse(); return rows.length ? `<div class="space-y-2">${rows.map(x => `<div class="flex justify-between items-center py-2 border-b border-slate-100 dark:border-slate-700"><div><div class="text-sm font-bold">${x.number || 'Bill'} <span class="font-normal text-slate-400">· ${x.payment}</span></div><div class="text-xs text-slate-500">${x.items?.length || 0} items · ${x.time || ''}</div></div><b class="text-sm">${money(x.total)}</b></div>`).join('')}</div>` : `<div class="text-center py-12 text-slate-400 text-sm">No bills yet today.<br><button onclick="switchView('billing')" class="text-[#e86b52] font-bold mt-2">Create your first bill →</button></div>` }
+        function stockRows(limit) { return db.inventory.slice(0, limit).map(x => { let total = x.godown + x.kitchen, low = total <= x.threshold; return `<div class="flex items-center justify-between py-2.5 border-b border-slate-100 dark:border-slate-700"><div class="flex items-center gap-3"><div class="w-8 h-8 rounded-lg soft-bg bg-slate-100 grid place-items-center text-xs font-bold">${x.name.slice(0, 2).toUpperCase()}</div><div><div class="text-sm font-bold">${x.name}</div><div class="text-xs text-slate-500">${x.godown} ${x.unit} bulk · ${x.kitchen} ${x.unit} kitchen</div></div></div><span class="text-[10px] px-2 py-1 rounded-full ${low ? 'bg-[#fff0df] text-[#bd6a1d]' : 'bg-[#e8f7ee] text-[#24755f]'}">${low ? 'Low stock' : 'Healthy'}</span></div>` }).join('') }
+        function billing() { let subtotal = cart.reduce((a, x) => a + x.price * x.qty, 0); return `<div class="flex flex-col lg:flex-row justify-between gap-4 mb-5"><div><div class="flex items-center gap-2 mb-1"><span class="w-2 h-2 bg-[#e86b52] rounded-full"></span><span class="text-xs font-bold uppercase tracking-wider text-slate-500">Counter 01</span></div><h1 class="font-display text-3xl font-bold">New bill</h1></div><div class="flex gap-2"><button onclick="openCustom()" class="btn-soft rounded-lg px-3 py-2 text-sm font-bold flex items-center gap-2"><i data-lucide="pencil" class="w-4 h-4"></i>Open item</button><button onclick="clearCart()" class="border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-500">Clear cart</button></div></div><div class="grid xl:grid-cols-[1.45fr_.8fr] gap-5"><section class="panel p-4 md:p-5"><div class="flex gap-2 mb-4"><div class="relative flex-1"><i data-lucide="search" class="w-4 h-4 absolute left-3 top-3 text-slate-400"></i><input id="menuSearch" placeholder="Search menu..." class="pl-9"></div><button class="border border-slate-200 dark:border-slate-700 px-3 rounded-lg"><i data-lucide="sliders-horizontal" class="w-4 h-4 text-slate-500"></i></button></div><div class="flex gap-5 border-b border-slate-200 dark:border-slate-700 mb-5 overflow-auto">${['Juices', 'Tiffin', 'Dinner', 'Beverages', 'Snacks'].map(x => `<button onclick="setCategory('${x}')" class="pb-3 text-sm whitespace-nowrap ${activeCategory === x ? 'tab-active' : 'text-slate-500'}">${x}</button>`).join('')}</div><div id="menuGrid" class="grid grid-cols-2 sm:grid-cols-3 gap-3">${db.menu.filter(x => x.category === activeCategory).map(x => `<button onclick="addCart('${x.id}')" class="menu-item text-left border border-slate-200 dark:border-slate-700 rounded-xl p-3 hover:border-[#e86b52] hover:shadow-soft"><div class="text-2xl mb-4">${x.emoji || '🍽️'}</div><div class="font-bold text-sm">${x.name}</div><div class="flex justify-between items-center mt-2"><span class="text-xs text-slate-500">${money(x.price)}</span><span class="w-6 h-6 bg-[#e8f7ee] text-[#24755f] rounded-full grid place-items-center text-lg">+</span></div></button>`).join('')}</div></section><section class="panel p-5 h-fit xl:sticky xl:top-24"><div class="flex justify-between items-center mb-5"><h2 class="font-display font-bold text-lg">Current order</h2><span class="text-xs bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded-full">${cart.reduce((a, x) => a + x.qty, 0)} items</span></div><div class="space-y-3 mb-5 min-h-[120px]">${cart.length ? cart.map(x => `<div class="flex justify-between gap-3"><div class="flex gap-2"><button onclick="changeQty('${x.id}',-1)" class="w-6 h-6 border rounded text-slate-500">−</button><div><div class="text-sm font-bold">${x.name}</div><div class="text-xs text-slate-500">${money(x.price)} × ${x.qty}</div></div></div><b class="text-sm">${money(x.price * x.qty)}</b></div>`).join('') : `<div class="text-center text-sm text-slate-400 py-10">Your order is empty.<br><span class="text-xs">Tap a menu item to add it</span></div>`}</div><div class="border-t border-slate-200 dark:border-slate-700 pt-4 space-y-3 text-sm"><div class="flex justify-between"><span class="text-slate-500">Subtotal</span><b>${money(subtotal)}</b></div><div class="flex justify-between items-center"><label class="flex items-center gap-2 text-slate-500"><input id="taxToggle" type="checkbox" class="w-4 h-4 accent-[#e86b52]"> GST / Tax 5%</label><span>${money(subtotal * .05)}</span></div><div class="flex justify-between items-center"><span class="text-slate-500">Discount</span><input id="discount" type="number" min="0" value="0" class="w-20 text-right py-1"></div><div class="flex justify-between items-center"><span class="text-slate-500">Advance adjustment</span><input id="advance" type="number" min="0" value="0" class="w-20 text-right py-1"></div><div class="flex justify-between items-end border-t border-slate-200 dark:border-slate-700 pt-4"><span class="font-bold">Grand total</span><strong id="grandTotal" class="font-display text-2xl">${money(subtotal)}</strong></div></div><div class="grid grid-cols-2 gap-2 mt-5">${['Cash', 'UPI', 'Card', 'Split/Credit'].map(x => `<button onclick="checkout('${x}')" class="${x === 'Cash' ? 'btn-primary' : 'border border-slate-200 dark:border-slate-700'} rounded-lg py-3 text-xs font-bold">${x}</button>`).join('')}</div></section></div>` }
+        function inventory() { return `<div class="flex flex-col sm:flex-row justify-between gap-4 mb-6"><div><p class="text-xs uppercase tracking-wider font-bold text-[#e86b52] mb-1">Godown control</p><h1 class="font-display text-3xl font-bold">Stock, in two places.</h1><p class="text-sm text-slate-500 mt-2">Move stock from bulk storage to the kitchen as your team needs it.</p></div><div class="flex gap-2"><button onclick="openStock('inward')" class="btn-primary rounded-lg px-3 py-2 text-sm font-bold">+ Stock inward</button><button onclick="openStock('transfer')" class="btn-soft rounded-lg px-3 py-2 text-sm font-bold">Transfer</button></div></div><div class="grid grid-cols-2 md:grid-cols-3 gap-3 mb-5"><div class="panel p-4"><span class="text-xs text-slate-500">Bulk stock value</span><b class="block font-display text-2xl mt-2">${money(db.inventory.reduce((a, x) => a + x.godown * x.cost, 0))}</b></div><div class="panel p-4"><span class="text-xs text-slate-500">Kitchen quantities</span><b class="block font-display text-2xl mt-2">${db.inventory.reduce((a, x) => a + x.kitchen, 0).toFixed(1)}</b></div><div class="panel p-4"><span class="text-xs text-slate-500">Needs attention</span><b class="block font-display text-2xl mt-2">${db.inventory.filter(x => x.godown + x.kitchen <= x.threshold).length}</b></div></div><section class="panel overflow-hidden"><div class="p-4 border-b border-slate-200 dark:border-slate-700 flex justify-between"><h2 class="font-display font-bold">Inventory register</h2><button onclick="openStock('wastage')" class="text-xs font-bold text-[#e86b52]">Log wastage</button></div><div class="overflow-auto"><table class="w-full text-left text-sm"><thead class="text-xs text-slate-400 uppercase bg-slate-50 dark:bg-slate-800"><tr><th class="p-3">Item</th><th class="p-3">Category</th><th class="p-3">Godown (bulk)</th><th class="p-3">Kitchen</th><th class="p-3">Threshold</th><th class="p-3">Cost</th><th class="p-3">Status</th></tr></thead><tbody>${db.inventory.map(x => { let low = x.godown + x.kitchen <= x.threshold; return `<tr class="border-t border-slate-100 dark:border-slate-700"><td class="p-3 font-bold whitespace-nowrap">${x.name}<div class="text-xs text-slate-400 font-normal">${x.id} · ${x.unit}</div></td><td class="p-3 text-slate-500">${x.category}</td><td class="p-3">${x.godown} ${x.unit}</td><td class="p-3">${x.kitchen} ${x.unit}</td><td class="p-3 text-slate-500">${x.threshold}</td><td class="p-3">${money(x.cost)}</td><td class="p-3"><span class="text-[10px] px-2 py-1 rounded-full ${low ? 'bg-[#fff0df] text-[#bd6a1d]' : 'bg-[#e8f7ee] text-[#24755f]'}">${low ? 'Low stock' : 'Healthy'}</span></td></tr>` }).join('')}</tbody></table></div></section>` }
+        function bookings() { return `<div class="flex justify-between items-end mb-6"><div><p class="text-xs uppercase tracking-wider font-bold text-[#e86b52] mb-1">Future revenue</p><h1 class="font-display text-3xl font-bold">Advance bookings</h1><p class="text-sm text-slate-500 mt-2">Keep every promise visible until it becomes a bill.</p></div><button onclick="openBooking()" class="btn-primary rounded-lg px-4 py-2.5 text-sm font-bold">+ New booking</button></div><div class="grid grid-cols-2 md:grid-cols-3 gap-3 mb-5"><div class="panel p-4"><span class="text-xs text-slate-500">Confirmed</span><b class="block font-display text-2xl mt-2">${db.bookings.filter(x => x.status === 'Confirmed').length}</b></div><div class="panel p-4"><span class="text-xs text-slate-500">Advance collected</span><b class="block font-display text-2xl mt-2">${money(db.bookings.reduce((a, x) => a + x.advance, 0))}</b></div><div class="panel p-4"><span class="text-xs text-slate-500">Pending balance</span><b class="block font-display text-2xl mt-2">${money(db.bookings.reduce((a, x) => a + (x.total - x.advance), 0))}</b></div></div><section class="panel overflow-auto"><table class="w-full text-left text-sm"><thead class="text-xs text-slate-400 uppercase bg-slate-50 dark:bg-slate-800"><tr><th class="p-3">Customer</th><th class="p-3">Service</th><th class="p-3">Date / session</th><th class="p-3">Total</th><th class="p-3">Advance</th><th class="p-3">Status</th><th></th></tr></thead><tbody>${db.bookings.length ? db.bookings.slice().reverse().map(x => `<tr class="border-t border-slate-100 dark:border-slate-700"><td class="p-3 font-bold">${x.customer}<div class="text-xs text-slate-400 font-normal">${x.phone}</div></td><td class="p-3 text-slate-500">${x.service}</td><td class="p-3">${x.date}<div class="text-xs text-slate-400">${x.session}</div></td><td class="p-3">${money(x.total)}</td><td class="p-3">${money(x.advance)}</td><td class="p-3"><span class="text-[10px] px-2 py-1 rounded-full bg-[#e8f7ee] text-[#24755f]">${x.status}</span></td><td class="p-3"><button onclick="settleBooking('${x.id}')" class="text-xs font-bold text-[#e86b52]">Convert to bill</button></td></tr>`).join('') : `<tr><td colspan="7" class="p-14 text-center text-slate-400">No advance bookings recorded.</td></tr>`}</tbody></table></section>` }
+        function expenses() { let day = db.expenses.filter(x => x.date === today()).reduce((a, x) => a + x.amount, 0), month = db.expenses.filter(x => x.date.slice(0, 7) === today().slice(0, 7)).reduce((a, x) => a + x.amount, 0); return `<div class="flex justify-between items-end mb-6"><div><p class="text-xs uppercase tracking-wider font-bold text-[#e86b52] mb-1">Cash outflow</p><h1 class="font-display text-3xl font-bold">Daily expenses</h1><p class="text-sm text-slate-500 mt-2">Know where the kitchen and hotel spend is going.</p></div><button onclick="openExpense()" class="btn-primary rounded-lg px-4 py-2.5 text-sm font-bold">+ Log expense</button></div><div class="grid grid-cols-2 gap-3 mb-5"><div class="panel p-4"><span class="text-xs text-slate-500">Today</span><b class="block font-display text-2xl mt-2">${money(day)}</b></div><div class="panel p-4"><span class="text-xs text-slate-500">This month</span><b class="block font-display text-2xl mt-2">${money(month)}</b></div></div><section class="panel overflow-auto"><table class="w-full text-left text-sm"><thead class="text-xs text-slate-400 uppercase bg-slate-50 dark:bg-slate-800"><tr><th class="p-3">Date</th><th class="p-3">Category</th><th class="p-3">Paid to</th><th class="p-3">Method</th><th class="p-3">Reference</th><th class="p-3">Amount</th></tr></thead><tbody>${db.expenses.length ? db.expenses.slice().reverse().map(x => `<tr class="border-t border-slate-100 dark:border-slate-700"><td class="p-3">${x.date}</td><td class="p-3 font-bold">${x.category}</td><td class="p-3">${x.paidTo}</td><td class="p-3 text-slate-500">${x.method}</td><td class="p-3 text-slate-500">${x.ref || '—'}</td><td class="p-3 font-bold">${money(x.amount)}</td></tr>`).join('') : `<tr><td colspan="6" class="p-14 text-center text-slate-400">No expenses logged yet.</td></tr>`}</tbody></table></section>` }
+        function switchView(v) { currentView = v; document.querySelectorAll('.nav-btn').forEach(b => { b.classList.toggle('nav-active', b.dataset.view === v) }); document.getElementById('pageTitle').textContent = { dashboard: 'Overview', billing: 'POS & Billing', inventory: 'Godown Stock', bookings: 'Advance Bookings', expenses: 'Expenses' }[v]; render() }
+        function setCategory(c) { activeCategory = c; render() } function addCart(id) { let x = db.menu.find(x => x.id === id), row = cart.find(x => x.id === id); row ? row.qty++ : cart.push({ ...x, qty: 1 }); render() } function changeQty(id, n) { let x = cart.find(x => x.id === id); if (x) x.qty += n; cart = cart.filter(x => x.qty > 0); render() } function clearCart() { cart = []; render() }
+        function modal(title, body) { document.getElementById('modalRoot').innerHTML = `<div class="fixed inset-0 z-50 bg-[#17212b]/45 backdrop-blur-sm grid place-items-center p-4"><div class="panel w-full max-w-lg max-h-[90vh] overflow-auto"><div class="flex justify-between items-center p-5 border-b border-slate-200 dark:border-slate-700"><h2 class="font-display text-lg font-bold">${title}</h2><button onclick="closeModal()" class="p-1 text-slate-400"><i data-lucide="x"></i></button></div><div class="p-5">${body}</div></div></div>`; lucide.createIcons() } function closeModal() { document.getElementById('modalRoot').innerHTML = '' }
+        function formRow(label, input) { return `<label class="block text-xs font-bold text-slate-500 mb-3">${label}<span class="block mt-1">${input}</span></label>` }
+        function openCustom() { modal('Add open item', formRow('Item name', '<input id="customName" placeholder="e.g. Special thali">') + formRow('Price', '<input id="customPrice" type="number" min="0" placeholder="0">') + '<button onclick="addCustom()" class="btn-primary w-full rounded-lg py-2.5 text-sm font-bold">Add to order</button>') }
+        function addCustom() { let name = document.getElementById('customName').value, price = +document.getElementById('customPrice').value; if (!name || !price) return; cart.push({ id: uid('open'), name, price, qty: 1 }); closeModal(); render() }
+        function checkout(payment) { if (!cart.length) return alert('Add at least one item to the order.'); let subtotal = cart.reduce((a, x) => a + x.price * x.qty, 0), tax = document.getElementById('taxToggle')?.checked ? subtotal * .05 : 0, discount = +document.getElementById('discount')?.value || 0, advance = +document.getElementById('advance')?.value || 0, total = Math.max(0, subtotal + tax - discount - advance), bill = { id: uid('b'), number: 'B-' + String(db.bills.length + 1).padStart(4, '0'), date: today(), time: new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }), items: cart, total, payment, subtotal, tax, discount, advance }; persist('bills', [...db.bills, bill]); cart = []; receipt(bill) }
+        function receipt(b) { modal('Print receipt', `<div id="receipt" class="bg-white text-[#17212b] p-5 mx-auto max-w-[320px] text-sm"><div class="text-center border-b border-dashed pb-3 mb-3"><img src="images/logo/logo.jpeg" alt="MKS logo" class="w-14 h-14 mx-auto mb-2 object-cover"><div class="font-display font-bold text-xl">MKS</div><div class="text-xs text-slate-500">Hotel & Restaurant</div><div class="text-xs mt-2">${b.number} · ${b.date} ${b.time}</div></div>${b.items.map(x => `<div class="flex justify-between py-1"><span>${x.name} × ${x.qty}</span><b>${money(x.price * x.qty)}</b></div>`).join('')}<div class="border-t border-dashed mt-3 pt-3 space-y-1"><div class="flex justify-between"><span>Subtotal</span><span>${money(b.subtotal)}</span></div><div class="flex justify-between"><span>Tax</span><span>${money(b.tax)}</span></div><div class="flex justify-between"><span>Discount / advance</span><span>-${money(b.discount + b.advance)}</span></div><div class="flex justify-between font-bold text-lg pt-2"><span>TOTAL</span><span>${money(b.total)}</span></div></div><div class="text-center text-xs text-slate-500 mt-5">Paid via ${b.payment}<br>Thank you, see you again.</div></div><button onclick="window.print()" class="btn-primary w-full rounded-lg py-3 mt-5 font-bold flex justify-center gap-2"><i data-lucide="printer" class="w-4 h-4"></i>Print receipt</button>`) }
+        function openStock(type) { let title = { inward: 'Stock inward', transfer: 'Transfer to kitchen', wastage: 'Wastage / spoilage' }[type]; modal(title, formRow('Item', `<select id="stockItem">${db.inventory.map(x => `<option value="${x.id}">${x.name} (${x.unit})</option>`).join('')}</select>`) + formRow('Quantity', '<input id="stockQty" type="number" min="0.1" step="0.1" placeholder="0">') + (type === 'inward' ? formRow('Purchase reference', '<input id="stockRef" placeholder="Bill / supplier reference">') : '') + `<button onclick="saveStock('${type}')" class="btn-primary w-full rounded-lg py-2.5 font-bold">Save movement</button>`) }
+        function saveStock(type) { let x = db.inventory.find(x => x.id === document.getElementById('stockItem').value), q = +document.getElementById('stockQty').value; if (!x || !q) return; if (type === 'inward') x.godown += q; if (type === 'transfer') { if (q > x.godown) return alert('Not enough godown stock.'); x.godown -= q; x.kitchen += q } if (type === 'wastage') { if (q > x.kitchen) return alert('Not enough kitchen stock.'); x.kitchen -= q } persist('inventory', db.inventory); closeModal() }
+        function openBooking() { modal('Register advance booking', formRow('Customer name', '<input id="bkCustomer" placeholder="Full name">') + formRow('Phone', '<input id="bkPhone" placeholder="Phone number">') + formRow('Event / service', '<select id="bkService"><option>Catering</option><option>Bulk tiffins</option><option>Dinner hall</option></select>') + formRow('Service date', '<input id="bkDate" type="date" value="' + today() + '">') + formRow('Session', '<select id="bkSession"><option>Breakfast</option><option>Lunch</option><option>Dinner</option></select>') + formRow('Estimated total', '<input id="bkTotal" type="number" min="0">') + formRow('Advance received', '<input id="bkAdvance" type="number" min="0" value="0">') + '<button onclick="saveBooking()" class="btn-primary w-full rounded-lg py-2.5 font-bold">Save booking</button>') }
+        function saveBooking() { let b = { id: uid('bk'), customer: document.getElementById('bkCustomer').value, phone: document.getElementById('bkPhone').value, service: document.getElementById('bkService').value, date: document.getElementById('bkDate').value, session: document.getElementById('bkSession').value, total: +document.getElementById('bkTotal').value, advance: +document.getElementById('bkAdvance').value, status: 'Confirmed' }; if (!b.customer || !b.total) return; persist('bookings', [...db.bookings, b]); closeModal() }
+        function settleBooking(id) { let b = db.bookings.find(x => x.id === id); cart = [{ id: uid('booking'), name: `${b.service} · ${b.customer}`, price: b.total, qty: 1 }]; switchView('billing'); setTimeout(() => { document.getElementById('advance').value = b.advance }, 0) }
+        function openExpense() { modal('Log daily expense', formRow('Date', '<input id="exDate" type="date" value="' + today() + '">') + formRow('Category', '<select id="exCategory"><option>Vegetables</option><option>Milk / Dairy</option><option>LPG Cylinder</option><option>Meat / Poultry</option><option>Maintenance</option><option>Staff Wages</option><option>Misc</option></select>') + formRow('Amount', '<input id="exAmount" type="number" min="0">') + formRow('Paid to', '<input id="exPaid" placeholder="Vendor or person">') + formRow('Payment method', '<select id="exMethod"><option>Cash</option><option>UPI</option><option>Card</option><option>Bank transfer</option></select>') + formRow('Reference / bill no.', '<input id="exRef" placeholder="Optional">') + '<button onclick="saveExpense()" class="btn-primary w-full rounded-lg py-2.5 font-bold">Save expense</button>') }
+        function saveExpense() { let x = { id: uid('ex'), date: document.getElementById('exDate').value, category: document.getElementById('exCategory').value, amount: +document.getElementById('exAmount').value, paidTo: document.getElementById('exPaid').value, method: document.getElementById('exMethod').value, ref: document.getElementById('exRef').value }; if (!x.amount) return; persist('expenses', [...db.expenses, x]); closeModal() }
+        function exportExcel() { let wb = XLSX.utils.book_new();[['Bills_History', db.bills], ['Godown_Inventory', db.inventory], ['Menu_Master', db.menu], ['Advance_Bookings', db.bookings], ['Daily_Expenses', db.expenses]].forEach(([n, data]) => XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(data), n)); XLSX.writeFile(wb, `muthu-hotel-backup-${today()}.xlsx`) }
+        function importExcel(file) { let r = new FileReader(); r.onload = e => { let wb = XLSX.read(e.target.result, { type: 'array' });[['Godown_Inventory', 'inventory'], ['Menu_Master', 'menu'], ['Bills_History', 'bills'], ['Advance_Bookings', 'bookings'], ['Daily_Expenses', 'expenses']].forEach(([sheet, key]) => { if (wb.Sheets[sheet]) persist(key, XLSX.utils.sheet_to_json(wb.Sheets[sheet])) }); alert('Backup imported successfully.'); render() }; r.readAsArrayBuffer(file) }
+        function settings() { modal('Settings & sync', formRow('Google Apps Script Web App URL', '<input id="webhook" value="' + (db.settings.webhook || SHEET_WEBHOOK) + '" placeholder="https://script.google.com/macros/s/.../exec">') + '<p class="text-xs text-slate-500 mb-4">Your records are saved offline first, then automatically sent to your Google Sheet after each change.</p><button onclick="saveSettings()" class="btn-primary w-full rounded-lg py-2.5 font-bold">Save configuration</button><button onclick="syncNow()" class="btn-soft w-full rounded-lg py-2.5 font-bold mt-2">Push data now</button>') }
+        function saveSettings() { db.settings.webhook = document.getElementById('webhook').value.trim(); localStorage.setItem('ledgerly-settings', JSON.stringify(db.settings)); closeModal(); pushToSheet() }
+        async function pushToSheet() { if (!db.settings.webhook) return; try { await fetch(db.settings.webhook, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ menu: db.menu, inventory: db.inventory, bills: db.bills, bookings: db.bookings, expenses: db.expenses }) }); } catch (e) { console.warn('Google Sheet sync unavailable', e) } }
+        async function syncNow() { if (!db.settings.webhook) return alert('Add a Web App URL first.'); await pushToSheet(); alert('Sync request sent.') }
+        function updateTotals() { let subtotal = cart.reduce((a, x) => a + x.price * x.qty, 0), tax = document.getElementById('taxToggle')?.checked ? subtotal * .05 : 0, discount = +document.getElementById('discount')?.value || 0, advance = +document.getElementById('advance')?.value || 0; let grandTotal = document.getElementById('grandTotal'); if (grandTotal) grandTotal.textContent = money(Math.max(0, subtotal + tax - discount - advance)) }
+        function bind() { document.getElementById('menuSearch')?.addEventListener('input', e => { let q = e.target.value.toLowerCase(); document.querySelectorAll('#menuGrid button').forEach(b => b.classList.toggle('hide', !b.textContent.toLowerCase().includes(q))) });['taxToggle', 'discount', 'advance'].forEach(id => document.getElementById(id)?.addEventListener('input', updateTotals)); updateTotals() }
+        document.getElementById('exportBtn').onclick = exportExcel; document.getElementById('importInput').onchange = e => e.target.files[0] && importExcel(e.target.files[0]); document.getElementById('settingsBtn').onclick = settings; document.getElementById('themeBtn').onclick = () => { document.documentElement.classList.toggle('dark'); localStorage.setItem('ledgerly-dark', document.documentElement.classList.contains('dark')) }; document.getElementById('mobileMenu').onclick = () => document.getElementById('mobileNav').classList.toggle('hide'); document.querySelectorAll('.nav-btn').forEach(b => { let clone = b.cloneNode(true); clone.className = 'nav-btn px-3 py-2 rounded-lg whitespace-nowrap text-sm'; clone.onclick = () => switchView(b.dataset.view); document.getElementById('mobileNav').appendChild(clone) }); nav(); if (localStorage.getItem('ledgerly-dark') === 'true') document.documentElement.classList.add('dark'); load();
+    </script>
+</body>
+
+</html>hnb
